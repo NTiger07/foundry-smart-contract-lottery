@@ -36,7 +36,6 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
 contract Raffle is VRFConsumerBaseV2Plus {
     // ERRORS
     error Raffle__NotEnoughEthSent();
-    error Raffle__NotEnoughTimePassed();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
     error Raffle__UpkeepNotNeeded(uint256 balance, uint256 playersLength, RaffleState raffleState);
@@ -65,6 +64,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     // EVENTS
     event RaffleEntered(address indexed player, uint256 amount);
     event RaffleWinnerPicked(address indexed winner);
+    event RaffleUpkeepPerformed(uint256 returnId);
 
     constructor(
         uint256 _entryFee,
@@ -128,7 +128,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
             numWords: NUM_WORDS,
             extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
         });
-        s_vrfCoordinator.requestRandomWords(request);
+        uint256 returnId = s_vrfCoordinator.requestRandomWords(request);
+        emit RaffleUpkeepPerformed(returnId);
     }
 
     function fulfillRandomWords(uint256, /*requestId*/ uint256[] calldata randomWords) internal override {
