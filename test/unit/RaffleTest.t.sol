@@ -47,4 +47,23 @@ contract RaffleTest is Test {
         address playerRecorded = raffle.getPlayer(0);
         assert(playerRecorded == PLAYER);
     }
+
+    function testEnteringRaffleEmitsEvent() public {
+        vm.prank(PLAYER);
+        vm.expectEmit(true, false, false, false, address(raffle));
+        emit Raffle.RaffleEntered(PLAYER, 0.1 ether);
+        raffle.enterRaffle{value: 0.1 ether}();
+    }
+
+    function testDontAllowPlayersToEnterWhileCalculating() public {
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: 0.1 ether}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1); // Move to the next block to trigger upkeep
+        raffle.performUpkeep(""); // Simulate upkeep to change state to CALCULATING
+        assert(raffle.getRaffleState() == Raffle.RaffleState.CALCULATING);
+        vm.expectRevert(Raffle.Raffle__RaffleNotOpen.selector);
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: 0.1 ether}();
+    }
 }
