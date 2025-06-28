@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import {Script, console} from "forge-std/Script.sol";
-import {HelperConfig} from "./HelperConfig.s.sol";
+import {Script} from "forge-std/Script.sol";
+import {HelperConfig, CodeConstants} from "./HelperConfig.s.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {LinkToken} from "test/mocks/LinkToken.sol";
 
 contract CreateSubscription is Script {
     function createSubscriptionUsingConfig() public returns (uint256, address) {
@@ -28,10 +29,10 @@ contract CreateSubscription is Script {
     }
 }
 
-contract FundSubscription is Script {
+contract FundSubscription is Script, CodeConstants {
     uint256 public constant FUND_AMOUNT = 3 ether;
 
-    function fundSubscriptionUsingConfig() public returns (uint256, address) {
+    function fundSubscriptionUsingConfig() public {
         HelperConfig helperConfig = new HelperConfig();
         address vrfCoordinator = helperConfig.getConfig().vrfCoordinator;
         uint256 subscriptionId = helperConfig.getConfig().subscriptionId;
@@ -40,15 +41,31 @@ contract FundSubscription is Script {
     }
 
     function fundSubscription(
-        address vrfCoordinator
-    ) public returns (uint256, address) {
-        vm.startBroadcast();
-
-        vm.stopBroadcast();
-        return (subId, vrfCoordinator);
+        address vrfCoordinator,
+        uint256 subscriptionId,
+        address linkToken
+    ) public {
+        if (block.chainid == LOCAL_CHAIN_ID) {
+            vm.startBroadcast();
+            VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(
+                subscriptionId,
+                FUND_AMOUNT
+            );
+            vm.stopBroadcast();
+        } else {
+            vm.startBroadcast();
+            LinkToken(linkToken).transferAndCall(
+                vrfCoordinator,
+                FUND_AMOUNT,
+                abi.encode(subscriptionId)
+            );
+            vm.stopBroadcast();
+        }
     }
 
     function run() public {
         fundSubscriptionUsingConfig();
     }
 }
+
+contract AddConsumer is Script {}
