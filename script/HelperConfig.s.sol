@@ -27,6 +27,7 @@ contract HelperConfig is CodeConstants, Script {
         uint256 subscriptionId;
         uint32 callbackGasLimit;
         address link; // Only used for Sepolia
+        address account; // The account that deploys the contract
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -52,9 +53,10 @@ contract HelperConfig is CodeConstants, Script {
                 interval: 30,
                 vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
                 keyHash: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
-                subscriptionId: 0,
+                subscriptionId: 115604354893779294752764413067044902285472029228754126554228561027115108021132,
                 callbackGasLimit: 500000,
-                link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+                link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+                account: 0x9197273762e41019a4c77Aaec0e1Abf9769E4599
             });
     }
 
@@ -79,7 +81,8 @@ contract HelperConfig is CodeConstants, Script {
                 keyHash: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
                 subscriptionId: 0,
                 callbackGasLimit: 500000,
-                link: address(linkToken)
+                link: address(linkToken),
+                account: 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38
             });
     }
 }
